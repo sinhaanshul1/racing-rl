@@ -11,17 +11,24 @@ class TrackOverview:
         self._car = car.Car(0.25, 0.5)
         self._track_img = track_image_path
         self._track = Track(track_image_path)
+        self._start_coordinate = None
+        self._end_coordinate = None
 
     def run(self) -> None:
         '''Handles main game loop.'''
         pygame.init()
         pygame.display.set_caption('Racing')
-        self._resize_surface((len(self._track.track()[0]), len(self._track.track())))
+        pygame.display.set_mode((len(self._track.track()[0]), len(self._track.track())))
+        # self._resize_surface((len(self._track.track()[0]), len(self._track.track())))
         clock = pygame.time.Clock()
+        self._draw_track()
+        self._draw_center_line()
+        pygame.display.flip()
         while self._running:
             clock.tick(30)
             self._handle_events()
             self._redraw()
+            print(self._track.car_in_track(self._car))
 
         pygame.quit()
 
@@ -35,22 +42,43 @@ class TrackOverview:
                 if self._track.car_in_track(car.Car(i * 0.01, j * 0.01)):
                     # print('here')
                     pygame.draw.circle(surface, pygame.Color(0, 0, 255), (i * 0.01 * width, j * 0.01 * height), car.SIZE * min(height, width), width=0)
+
     def _handle_events(self) -> None:
         '''Handles user input events.'''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._end_game()
             elif event.type == pygame.VIDEORESIZE:
-                self._resize_surface(event.size)
+                print("No not allowed")
+                # self._resize_surface(event.size)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 click_x, click_y = event.pos
                 height, width = self._track.track().shape
                 self._car.set_location(click_x / width, click_y / height)
+                if self._start_coordinate is None:
+                    print("set start")
+                    self._start_coordinate = (click_y, click_x)
+                elif self._end_coordinate is None:
+                    print("set end")
+                    self._end_coordinate = (click_y, click_x)
+                    new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
+                    surface = pygame.display.get_surface()
+                    # pygame.draw.circle(surface, pygame.Color(255, 0, 255), new_coordinate_start, 10, width=0)
+                    # pygame.draw.circle(surface, pygame.Color(0, 255, 255), new_coordinate_end, 10, width=0)
+
+                    # print('drew start at', new_coordinate_start)
+                    # print('drew end at', new_coordinate_end)
+                else:
+                    self._start_coordinate = None
+                    self._end_coordinate = None
     
     def _redraw(self):
         self._draw_track()
+        self._draw_center_line()
         self._draw_car()
+        self._draw_start_stop()
         # self._car_in_track_checker()
+        # self._draw_center_line()
         pygame.display.flip()
 
 
@@ -63,6 +91,24 @@ class TrackOverview:
         car_y *= height
         pygame.draw.circle(surface, pygame.Color(255, 0, 0), (car_x, car_y), car.SIZE * min(height, width), width=0)
 
+    def _draw_start_stop(self):
+        if self._start_coordinate is not None and self._end_coordinate is not None:
+            new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
+            start_y, start_x = new_coordinate_start
+            end_y, end_x = new_coordinate_end
+            surface = pygame.display.get_surface()
+            pygame.draw.circle(surface, pygame.Color(255, 0, 255), (start_x, start_y), 10, width=0)
+            pygame.draw.circle(surface, pygame.Color(0, 255, 255), (end_x, end_y), 10, width=0)
+            print('drew start at', new_coordinate_start)
+            print('drew end at', new_coordinate_end)
+
+    def _draw_center_line(self):
+        surface = pygame.display.get_surface()
+        height, width = self._track.track().shape
+        centerline, width = self._track.center_width_representation()
+        for y, x in centerline:
+            pygame.draw.circle(surface, pygame.Color(0, 255, 0), (x, y), 1, width=0)
+
     def _draw_track(self):
         surface = pygame.display.get_surface()
         surface.fill(pygame.Color(0, 0, 0))
@@ -72,7 +118,7 @@ class TrackOverview:
 
     def _resize_surface(self, size: tuple[int, int]) -> None:
         width, height = size
-        self._track.resize(width, height)
+        # self._track.resize(width, height)
         pygame.display.set_mode(size, pygame.RESIZABLE)
     def _end_game(self):
         self._running = False
