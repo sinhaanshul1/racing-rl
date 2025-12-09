@@ -1,4 +1,4 @@
-SIZE = 0.01
+SIZE = 0.006
 
 class Car():
     def __init__(self, start_x, start_y, start_direction=0):
