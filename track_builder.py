@@ -99,8 +99,55 @@ class Track:
             if np.linalg.norm(end - np.array(coordinate)) < distance_to_end:
                 end_coordinate = np.array(coordinate)
                 distance_to_end = np.linalg.norm(end - np.array(coordinate))
-        # draw all the points in self._center_line and see i think it doesnt match with plotted center
-        return start_coordinate, end_coordinate
+        last_coordinate_looked_at = tuple(start_coordinate)
+        found_match = True
+        # sorted_center_line = self._find_direct_path(tuple(start_coordinate), tuple(end_coordinate), self._center_line)
+        print("Sorted: ", len(sorted_center_line))
+        print("Regular: ", len(self._center_line))
+
+        # return sorted_center_line    
+        return self._find_direct_path(tuple(start_coordinate), tuple(end_coordinate), self._center_line)
+    
+    def _find_direct_path(self, start, end, path):
+        stack = [(start, [start])]
+        all_paths = []
+
+        while stack:
+            current, current_path = stack.pop()
+
+            # If we reached the end, store this path
+            if current == end:
+                print("Found a path")
+                all_paths.append(current_path)
+                if len(all_paths) >= 4:
+                    return all_paths
+                continue
+
+            neighbors = self._get_neighbors(current)
+
+            for neighbor in neighbors:
+                t = tuple(neighbor)
+
+                # Only follow neighbors that are on the centerline AND not yet in this path
+                if t in path and t not in current_path:
+                    stack.append((t, current_path + [t]))
+        print("Number of paths found: ", len(all_paths))
+
+        return all_paths[0]
+
+
+    
+    def _get_neighbors(self, coordinate):
+        neighbors = []
+        neighbors.append((coordinate[0] + 0, coordinate[1] + 1))
+        neighbors.append((coordinate[0] + 1, coordinate[1] + 1))
+        neighbors.append((coordinate[0] + 1, coordinate[1] + 0))
+        neighbors.append((coordinate[0] + 1, coordinate[1] - 1))
+        neighbors.append((coordinate[0] + 0, coordinate[1] - 1))
+        neighbors.append((coordinate[0] - 1, coordinate[1] - 1))
+        neighbors.append((coordinate[0] - 1, coordinate[1] + 0))
+        neighbors.append((coordinate[0] - 1, coordinate[1] + 1))
+        return neighbors
 
 
 if __name__ == "__main__":

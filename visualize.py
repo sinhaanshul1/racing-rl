@@ -13,6 +13,7 @@ class TrackOverview:
         self._track = Track(track_image_path)
         self._start_coordinate = None
         self._end_coordinate = None
+        self._center_line = None
 
     def run(self) -> None:
         '''Handles main game loop.'''
@@ -28,7 +29,7 @@ class TrackOverview:
             clock.tick(30)
             self._handle_events()
             self._redraw()
-            print(self._track.car_in_track(self._car))
+            # print(self._track.car_in_track(self._car))
 
         pygame.quit()
 
@@ -61,8 +62,9 @@ class TrackOverview:
                 elif self._end_coordinate is None:
                     print("set end")
                     self._end_coordinate = (click_y, click_x)
-                    new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
-                    surface = pygame.display.get_surface()
+                    self._center_line = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
+                    # new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
+                    # surface = pygame.display.get_surface()
                     # pygame.draw.circle(surface, pygame.Color(255, 0, 255), new_coordinate_start, 10, width=0)
                     # pygame.draw.circle(surface, pygame.Color(0, 255, 255), new_coordinate_end, 10, width=0)
 
@@ -71,6 +73,7 @@ class TrackOverview:
                 else:
                     self._start_coordinate = None
                     self._end_coordinate = None
+                    self._center_line = None
     
     def _redraw(self):
         self._draw_track()
@@ -92,15 +95,20 @@ class TrackOverview:
         pygame.draw.circle(surface, pygame.Color(255, 0, 0), (car_x, car_y), car.SIZE * min(height, width), width=0)
 
     def _draw_start_stop(self):
-        if self._start_coordinate is not None and self._end_coordinate is not None:
-            new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
-            start_y, start_x = new_coordinate_start
-            end_y, end_x = new_coordinate_end
-            surface = pygame.display.get_surface()
-            pygame.draw.circle(surface, pygame.Color(255, 0, 255), (start_x, start_y), 10, width=0)
-            pygame.draw.circle(surface, pygame.Color(0, 255, 255), (end_x, end_y), 10, width=0)
-            print('drew start at', new_coordinate_start)
-            print('drew end at', new_coordinate_end)
+        if self._center_line is not None:
+            for coordinate in self._center_line:
+                y, x = coordinate
+
+                surface = pygame.display.get_surface()
+                pygame.draw.circle(surface, pygame.Color(255, 0, 255), (x, y), 5, width=0)
+            # new_coordinate_start, new_coordinate_end = self._track.sort_center_line(self._start_coordinate, self._end_coordinate)
+            # start_y, start_x = new_coordinate_start
+            # end_y, end_x = new_coordinate_end
+            # surface = pygame.display.get_surface()
+            # pygame.draw.circle(surface, pygame.Color(255, 0, 255), (start_x, start_y), 10, width=0)
+            # pygame.draw.circle(surface, pygame.Color(0, 255, 255), (end_x, end_y), 10, width=0)
+            # print('drew start at', new_coordinate_start)
+            # print('drew end at', new_coordinate_end)
 
     def _draw_center_line(self):
         surface = pygame.display.get_surface()
@@ -118,8 +126,8 @@ class TrackOverview:
 
     def _resize_surface(self, size: tuple[int, int]) -> None:
         width, height = size
-        # self._track.resize(width, height)
         pygame.display.set_mode(size, pygame.RESIZABLE)
+
     def _end_game(self):
         self._running = False
 
