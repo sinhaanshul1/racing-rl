@@ -14,6 +14,8 @@ class Track:
     def track(self):
         return self._track
     
+
+    
     def center_width_representation(self):
         return self._center_line, self._width
     
@@ -118,9 +120,7 @@ class Track:
             # If we reached the end, store this path
             if current == end:
                 print("Found a path")
-                all_paths.append(current_path)
-                if len(all_paths) >= 4:
-                    return all_paths
+                return current_path
                 continue
 
             neighbors = self._get_neighbors(current)
@@ -130,23 +130,24 @@ class Track:
 
                 # Only follow neighbors that are on the centerline AND not yet in this path
                 if t in path and t not in current_path:
-                    stack.append((t, current_path + [t]))
+                    stack.append((t, current_path.copy() + [t]))
         print("Number of paths found: ", len(all_paths))
 
-        return all_paths[0]
+        # return all_paths[0]
 
 
     
     def _get_neighbors(self, coordinate):
         neighbors = []
-        neighbors.append((coordinate[0] + 0, coordinate[1] + 1))
-        neighbors.append((coordinate[0] + 1, coordinate[1] + 1))
-        neighbors.append((coordinate[0] + 1, coordinate[1] + 0))
         neighbors.append((coordinate[0] + 1, coordinate[1] - 1))
         neighbors.append((coordinate[0] + 0, coordinate[1] - 1))
         neighbors.append((coordinate[0] - 1, coordinate[1] - 1))
         neighbors.append((coordinate[0] - 1, coordinate[1] + 0))
         neighbors.append((coordinate[0] - 1, coordinate[1] + 1))
+        neighbors.append((coordinate[0] + 0, coordinate[1] + 1))
+        neighbors.append((coordinate[0] + 1, coordinate[1] + 1))
+        neighbors.append((coordinate[0] + 1, coordinate[1] + 0))
+
         return neighbors
 
 
